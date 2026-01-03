@@ -1,0 +1,1 @@
+Esta aplicacion te dara 5 colores que combinan entre si con un hexadecimal para copiar y pegar
