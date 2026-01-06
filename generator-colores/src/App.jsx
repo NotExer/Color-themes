@@ -2,28 +2,56 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 function App() {
-  const generateColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+  // Convierte HSL a Hex
+  const hslToHex = (h, s, l) => {
+    l /= 100;
+    const a = s * Math.min(l, 1 - l) / 100;
+    const f = n => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  };
 
-  const [colors, setColors] = useState([
-    generateColor(), generateColor(), generateColor(), generateColor(), generateColor()
-  ]);
+  // Genera una paleta complementaria
+  const generateComplementaryPalette = () => {
+    const baseHue = Math.floor(Math.random() * 360);
+    const baseSat = 60 + Math.floor(Math.random() * 30); // 60-90%
+    
+    // Esquema de colores complementarios y análogos
+    return [
+      hslToHex(baseHue, baseSat, 50), // Color base
+      hslToHex((baseHue + 30) % 360, baseSat, 55), // Análogo 1
+      hslToHex((baseHue + 180) % 360, baseSat, 50), // Complementario
+      hslToHex((baseHue + 210) % 360, baseSat, 55), // Complementario análogo
+      hslToHex((baseHue + 150) % 360, baseSat - 10, 60), // Triádico
+    ];
+  };
+
+  const [colors, setColors] = useState(generateComplementaryPalette());
   const [copyStatus, setCopyStatus] = useState(null);
-  const [view, setView] = useState('generator'); // 'generator', 'policies', 'favorites'
+  const [view, setView] = useState('generator');
   const [favorites, setFavorites] = useState([]);
 
-  // Cargar favoritos al iniciar
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('myPalettes')) || [];
     setFavorites(saved);
   }, []);
 
-  // Guardar favoritos cuando cambien
   useEffect(() => {
     localStorage.setItem('myPalettes', JSON.stringify(favorites));
   }, [favorites]);
 
   const addColor = () => {
-    if (colors.length < 5) setColors([...colors, generateColor()]);
+    if (colors.length < 5) {
+      // Genera un color complementario basado en los existentes
+      const lastColor = colors[colors.length - 1];
+      const hue = parseInt(lastColor.slice(1), 16);
+      const baseHue = (hue % 360 + 60) % 360;
+      const newColor = hslToHex(baseHue, 70, 55);
+      setColors([...colors, newColor]);
+    }
   };
 
   const removeColor = (index) => {
@@ -56,7 +84,7 @@ function App() {
           onClick={() => setView('generator')}
         >
           <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 rotate-12" />
-          COLORGLASS
+          COLOR THEME
         </div>
         <div className="hidden md:flex gap-8 text-sm font-bold text-slate-400">
           <button onClick={() => setView('generator')} className={`hover:text-white transition-colors ${view === 'generator' ? 'text-white' : ''}`}>EXPLORAR</button>
@@ -71,7 +99,7 @@ function App() {
           {view === 'generator' && (
             <motion.div key="gen" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-1 flex flex-col">
               <div className="flex justify-between items-center mb-6 px-4">
-                <h2 className="text-xl font-bold opacity-50 uppercase tracking-widest">Generador</h2>
+                <h2 className="text-xl font-bold opacity-50 uppercase tracking-widest">Generador de temas</h2>
                 <button 
                   onClick={saveToFavorites}
                   className="bg-white/10 hover:bg-red-500/20 border border-white/10 p-3 rounded-2xl transition-all group"
@@ -99,7 +127,7 @@ function App() {
 
               <div className="flex flex-wrap justify-center gap-6 mt-12">
                 <button onClick={addColor} disabled={colors.length >= 5} className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 disabled:opacity-20 transition-all font-bold tracking-wide">+ AÑADIR COLOR</button>
-                <button onClick={() => setColors(colors.map(() => generateColor()))} className="px-10 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.4)] transition-all font-black text-lg">GENERAR NUEVA</button>
+                <button onClick={() => setColors(generateComplementaryPalette())} className="px-10 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.4)] transition-all font-black text-lg">GENERAR NUEVA</button>
               </div>
             </motion.div>
           )}
@@ -134,7 +162,7 @@ function App() {
           {view === 'policies' && (
             <motion.div key="pol" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex-1 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3.5rem] p-10 md:p-16 shadow-2xl overflow-y-auto">
               <h2 className="text-4xl font-black mb-8 italic">POLÍTICAS</h2>
-              <p className="text-slate-300 leading-relaxed max-w-2xl opacity-80">ColorGlass es una herramienta de código abierto. Todas tus paletas favoritas se guardan localmente en tu navegador mediante LocalStorage.</p>
+              <p className="text-slate-300 leading-relaxed max-w-2xl opacity-80">Color Theme es una herramienta de código abierto. Todas tus paletas favoritas se guardan localmente en tu navegador mediante LocalStorage.</p>
               <button onClick={() => setView('generator')} className="mt-8 px-6 py-3 bg-white text-slate-950 font-bold rounded-xl hover:bg-indigo-100">VOLVER</button>
             </motion.div>
           )}
@@ -144,11 +172,11 @@ function App() {
       {/* FOOTER */}
       <footer className="w-full border-t border-white/5 py-10 px-8 flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500 text-[10px] font-bold tracking-[0.2em]">
         <div className="flex items-center gap-4">
-          <span className="text-white/40 italic text-sm">COLORGLASS PROJECT</span>
+          <span className="text-white/40 italic text-sm">COLOR THEME</span>
           <span>© 2026</span>
         </div>
         <div className="flex gap-10 underline underline-offset-8 decoration-indigo-500/50">
-          <a href="#" className="hover:text-white transition-colors uppercase">GITHUB</a>
+          <a href="https://github.com/NotExer" className="hover:text-white transition-colors uppercase">GITHUB</a>
           <button onClick={() => setView('policies')} className="hover:text-white transition-colors uppercase">POLÍTICAS</button>
         </div>
       </footer>
