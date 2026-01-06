@@ -32,4 +32,4 @@ Sigue estos pasos para ejecutar el proyecto localmente:
 
 1. **Clona el repositorio**
    ```bash
-   git clone [https://github.com/NotExer/Color-themes](https://github.com/NotExer/Color-themes)
+   git clone https://github.com/NotExer/Color-themes
