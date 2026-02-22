@@ -8,6 +8,10 @@
 
 ---
 
+## 📺 Preview
+
+* **Visita el sitio:** color-theme-swart.vercel.app
+
 ## ✨ Características
 
 * **Generador Inteligente:** Crea combinaciones de colores aleatorias al instante.
