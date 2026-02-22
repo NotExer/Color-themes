@@ -10,7 +10,7 @@
 
 ## 📺 Preview
 
-**🌐 Visita el sitio:**  [https://news-resumer.vercel.app](https://news-resumer.vercel.app)
+**🌐 Visita el sitio:**  [https://color-theme-swart.vercel.app](https://color-theme-swart.vercel.app)
 
 ## ✨ Características
 
