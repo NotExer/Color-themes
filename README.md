@@ -10,7 +10,7 @@
 
 ## 📺 Preview
 
-[![ColorGlass Preview](https://color-theme-swart.vercel.app)
+(https://color-theme-swart.vercel.app)
 
 ## ✨ Características
 
