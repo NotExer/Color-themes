@@ -1,4 +1,4 @@
-# 🎨 ColorGlass — Color Palette Generator
+# ColorGlass — Color Palette Generator
 
 **ColorGlass** es un generador de paletas cromáticas minimalista y elegante con una estética **Glassmorphism**. Diseñado para creadores que buscan una herramienta rápida, visualmente atractiva y altamente interactiva.
 
@@ -8,11 +8,11 @@
 
 ---
 
-## 📺 Preview
+## Preview
 
-**🌐 Visita el sitio:**  [https://color-theme-swart.vercel.app](https://color-theme-swart.vercel.app)
+**Visita el sitio:**  [https://color-theme-swart.vercel.app](https://color-theme-swart.vercel.app)
 
-## ✨ Características
+## Características
 
 * **Generador Inteligente:** Crea combinaciones de colores aleatorias al instante.
 * **Interfaz Glassmorphism:** Diseño moderno con desenfoques de fondo, bordes suaves y efectos de cristal.
@@ -23,14 +23,14 @@
     * Layout interactivo que se expande al pasar el cursor.
     * Sistema dinámico para añadir o quitar colores (2-5 colores).
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 * **Framework:** [React.js](https://reactjs.org/)
 * **Estilos:** [Tailwind CSS](https://tailwindcss.com/)
 * **Animaciones:** [Framer Motion](https://www.framer.com/motion/)
 * **Iconos:** Custom SVG e Inline Icons.
 
-## 🚀 Instalación
+## Instalación
 
 Sigue estos pasos para ejecutar el proyecto localmente:
 
