@@ -116,7 +116,7 @@ function App() {
                         {color.toUpperCase()}
                       </motion.button>
                       {colors.length > 2 && (
-                        <button onClick={() => removeColor(index)} className="absolute top-6 right-6 bg-white/10 hover:bg-red-500 p-2.5 rounded-full opacity-0 group-hover:opacity-100 transition-all backdrop-blur-md border border-white/10">
+                        <button onClick={() => removeColor(index)} className="absolute top-6 right-6 bg-white/10 hover:bg-red-500 p-2.5 rounded-full group-hover:opacity-100 transition-all backdrop-blur-md border border-white/10">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                       )}
