@@ -112,7 +112,7 @@ function App() {
                                 <AnimatePresence mode='popLayout'>
                                     {colors.map((color, index) => (
                                         <motion.div key={color} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} style={{ backgroundColor: color }} className="group relative flex-1 min-h-[140px] md:min-h-full rounded-[2.5rem] flex items-center justify-center transition-[flex] duration-500 ease-in-out hover:flex-[1.6]">
-                                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => copyToClipboard(color)} className="bg-black/20 backdrop-blur-xl border border-white/20 px-6 py-3 rounded-2xl font-mono font-black text-xl shadow-xl opacity-0 md:opacity-100 group-hover:opacity-100 transition-opacity">
+                                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => copyToClipboard(color)} className="bg-black/20 backdrop-blur-xl border border-white/20 px-6 py-3 rounded-2xl font-mono font-black text-xl shadow-xl md:opacity-100 group-hover:opacity-100 transition-opacity">
                                                 {color.toUpperCase()}
                                             </motion.button>
                                             {colors.length > 2 && (
