@@ -1,197 +1,32 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion as Motion } from 'framer-motion'
 
-function App() {
-    // Convierte HSL a Hex
-    const hslToHex = (h, s, l) => {
-        l /= 100;
-        const a = s * Math.min(l, 1 - l) / 100;
-        const f = n => {
-            const k = (n + h / 30) % 12;
-            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-            return Math.round(255 * color).toString(16).padStart(2, '0');
-        };
-        return `#${f(0)}${f(8)}${f(4)}`;
-    };
-
-    // Genera una paleta complementaria
-    const generateComplementaryPalette = () => {
-        const baseHue = Math.floor(Math.random() * 360);
-        const baseSat = 60 + Math.floor(Math.random() * 30); // 60-90%
-
-        // Esquema de colores complementarios y análogos
-        return [
-            hslToHex(baseHue, baseSat, 50), // Color base
-            hslToHex((baseHue + 30) % 360, baseSat, 55), // Análogo 1
-            hslToHex((baseHue + 180) % 360, baseSat, 50), // Complementario
-            hslToHex((baseHue + 210) % 360, baseSat, 55), // Complementario análogo
-            hslToHex((baseHue + 150) % 360, baseSat - 10, 60), // Triádico
-        ];
-    };
-
-    const [colors, setColors] = useState(generateComplementaryPalette());
-    const [copyStatus, setCopyStatus] = useState(null);
-    const [view, setView] = useState('generator');
-    const [favorites, setFavorites] = useState([]);
-
-    useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem('myPalettes')) || [];
-        setFavorites(saved);
-    }, []);
-
-    useEffect(() => {
-        localStorage.setItem('myPalettes', JSON.stringify(favorites));
-    }, [favorites]);
-
-    const addColor = () => {
-        if (colors.length < 5) {
-            // Genera un color complementario basado en los existentes
-            const lastColor = colors[colors.length - 1];
-            const hue = parseInt(lastColor.slice(1), 16);
-            const baseHue = (hue % 360 + 60) % 360;
-            const newColor = hslToHex(baseHue, 70, 55);
-            setColors([...colors, newColor]);
-        }
-    };
-
-    const removeColor = (index) => {
-        if (colors.length > 2) setColors(colors.filter((_, i) => i !== index));
-    };
-
-    const copyToClipboard = (hex) => {
-        navigator.clipboard.writeText(hex);
-        setCopyStatus(hex);
-        setTimeout(() => setCopyStatus(null), 2000);
-    };
-
-    const saveToFavorites = () => {
-        if (!favorites.some(p => JSON.stringify(p) === JSON.stringify(colors))) {
-            setFavorites([...favorites, [...colors]]);
-        }
-    };
-
-    const removeFavorite = (index) => {
-        setFavorites(favorites.filter((_, i) => i !== index));
-    };
-
-    return (
-        <div className="min-h-screen flex flex-col bg-slate-950 text-white font-sans overflow-hidden">
-
-            {/* NAVBAR GLASS */}
-            <nav className="z-50 w-full border-b border-white/10 bg-slate-900/40 backdrop-blur-xl px-8 py-4 flex justify-between items-center">
-                <div
-                    className="flex items-center gap-3 font-black text-xl tracking-tighter italic cursor-pointer"
-                    onClick={() => setView('generator')}
-                >
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-500 rotate-12" />
-                    COLOR THEME
-                </div>
-                <div className="hidden md:flex gap-8 text-sm font-bold text-slate-400">
-                    <button onClick={() => setView('generator')} className={`hover:text-white transition-colors ${view === 'generator' ? 'text-white' : ''}`}>EXPLORAR</button>
-                    <button onClick={() => setView('favorites')} className={`hover:text-white transition-colors ${view === 'favorites' ? 'text-white' : ''}`}>MIS PALETAS ({favorites.length})</button>
-                </div>
-            </nav>
-
-            {/* CONTENIDO PRINCIPAL */}
-            <main className="flex-1 flex flex-col p-6 md:p-12 max-w-7xl mx-auto w-full overflow-hidden">
-
-                <AnimatePresence mode="wait">
-                    {view === 'generator' && (
-                        <motion.div key="gen" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex-1 flex flex-col">
-                            <div className="flex justify-between items-center mb-6 px-4">
-                                <h2 className="text-xl font-bold opacity-50 uppercase tracking-widest">Generador de temas</h2>
-                                <button
-                                    onClick={saveToFavorites}
-                                    className="bg-white/10 hover:bg-red-500/20 border border-white/10 p-3 rounded-2xl transition-all group"
-                                >
-                                    <svg className="w-6 h-6 group-active:scale-125 transition-transform text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.5 3c1.557 0 3.046.727 4 2.015C12.454 3.727 13.943 3 15.5 3 18.286 3 20.75 5.322 20.75 8.25c0 3.924-2.438 7.11-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001z" /></svg>
-                                </button>
-                            </div>
-
-                            <div className="flex-1 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3.5rem] p-4 flex flex-col md:flex-row gap-4 relative shadow-2xl overflow-hidden">
-                                <AnimatePresence mode='popLayout'>
-                                    {colors.map((color, index) => (
-                                        <motion.div key={color} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} transition={{ type: "spring", stiffness: 400, damping: 30 }} style={{ backgroundColor: color }} className="group relative flex-1 min-h-[140px] md:min-h-full rounded-[2.5rem] flex items-center justify-center transition-[flex] duration-500 ease-in-out hover:flex-[1.6]">
-                                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => copyToClipboard(color)} className="bg-black/20 backdrop-blur-xl border border-white/20 px-6 py-3 rounded-2xl font-mono font-black text-xl shadow-xl md:opacity-100 group-hover:opacity-100 transition-opacity">
-                                                {color.toUpperCase()}
-                                            </motion.button>
-                                            {colors.length > 2 && (
-                                                <button onClick={() => removeColor(index)} className="absolute top-6 right-6 bg-white/10 hover:bg-red-500 p-2.5 rounded-full group-hover:opacity-100 transition-all backdrop-blur-md border border-white/10">
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
-                                                </button>
-                                            )}
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                            </div>
-
-                            <div className="flex flex-wrap justify-center gap-6 mt-12">
-                                <button onClick={addColor} disabled={colors.length >= 5} className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 disabled:opacity-20 transition-all font-bold tracking-wide">+ AÑADIR COLOR</button>
-                                <button onClick={() => setColors(generateComplementaryPalette())} className="px-10 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 shadow-[0_0_30px_rgba(79,70,229,0.4)] transition-all font-black text-lg">GENERAR NUEVA</button>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {view === 'favorites' && (
-                        <motion.div key="favs" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex-1 overflow-y-auto px-4 custom-scrollbar">
-                            <h2 className="text-4xl font-black mb-10 italic">MIS PALETAS</h2>
-                            {favorites.length === 0 ? (
-                                <div className="text-slate-500 text-center mt-20">Aún no has guardado ninguna paleta.</div>
-                            ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {favorites.map((pal, pIdx) => (
-                                        <div key={pIdx} className="bg-white/5 border border-white/10 p-4 rounded-[2.5rem] shadow-xl group">
-                                            <div className="flex h-32 w-full rounded-[1.5rem] overflow-hidden mb-4 border border-white/5">
-                                                {pal.map((c, cIdx) => (
-                                                    <div key={cIdx} style={{ backgroundColor: c }} className="flex-1" />
-                                                ))}
-                                            </div>
-                                            <div className="flex justify-between items-center px-2">
-                                                <button onClick={() => { setColors(pal); setView('generator') }} className="text-[10px] font-bold tracking-widest uppercase hover:text-indigo-400 transition-colors">Cargar</button>
-                                                <button onClick={() => removeFavorite(pIdx)} className="text-red-500/50 hover:text-red-500 transition-colors">
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </motion.div>
-                    )}
-
-                    {view === 'policies' && (
-                        <motion.div key="pol" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="flex-1 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[3.5rem] p-10 md:p-16 shadow-2xl overflow-y-auto">
-                            <h2 className="text-4xl font-black mb-8 italic">POLÍTICAS</h2>
-                            <p className="text-slate-300 leading-relaxed max-w-2xl opacity-80">Color Theme es una herramienta de código abierto. Todas tus paletas favoritas se guardan localmente en tu navegador mediante LocalStorage.</p>
-                            <button onClick={() => setView('generator')} className="mt-8 px-6 py-3 bg-white text-slate-950 font-bold rounded-xl hover:bg-indigo-100">VOLVER</button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </main>
-
-            {/* FOOTER */}
-            <footer className="w-full border-t border-white/5 py-10 px-8 flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500 text-[10px] font-bold tracking-[0.2em]">
-                <div className="flex items-center gap-4">
-                    <span className="text-white/40 italic text-sm">COLOR THEME</span>
-                    <span>© 2026</span>
-                </div>
-                <div className="flex gap-10 underline underline-offset-8 decoration-indigo-500/50">
-                    <a href="https://github.com/NotExer" className="hover:text-white transition-colors uppercase">GITHUB</a>
-                    <button onClick={() => setView('policies')} className="hover:text-white transition-colors uppercase">POLÍTICAS</button>
-                </div>
-            </footer>
-
-            {/* POP DE COPIADO */}
-            <AnimatePresence>
-                {copyStatus && (
-                    <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.5 }} className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[100] bg-white text-slate-900 px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-4 border border-white/20">
-                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: copyStatus }} />
-                        <span className="font-bold uppercase tracking-widest text-xs tracking-tighter italic">Copiado con éxito</span>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    )
+const Icon = ({ name, size = 20, stroke = 1.8 }) => {
+  const paths = {
+    palette: <><path d="M12 3a9 9 0 0 0 0 18h1.2a1.8 1.8 0 0 0 1.2-3.1 1.8 1.8 0 0 1 1.2-3.1H18A3 3 0 0 0 21 12c0-5-4-9-9-9Z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7.5" r="1" /><circle cx="15" cy="7.5" r="1" /></>,
+    sparkles: <><path d="m12 3 1.1 4.9L18 9l-4.9 1.1L12 15l-1.1-4.9L6 9l4.9-1.1L12 3Z" /><path d="m19 15 .6 2.4L22 18l-2.4.6L19 21l-.6-2.4L16 18l2.4-.6L19 15Z" /></>,
+    heart: <path d="M20.8 8.8c0 5.1-8.8 10.1-8.8 10.1S3.2 13.9 3.2 8.8A4.5 4.5 0 0 1 12 6.6a4.5 4.5 0 0 1 8.8 2.2Z" />,
+    info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>, plus: <><path d="M12 5v14M5 12h14" /></>,
+    refresh: <><path d="M20 11a8 8 0 0 0-14.7-4L4 9" /><path d="M4 4v5h5M4 13a8 8 0 0 0 14.7 4L20 15" /><path d="M20 20v-5h-5" /></>,
+    copy: <><rect x="8" y="8" width="11" height="11" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></>, x: <><path d="m6 6 12 12M18 6 6 18" /></>,
+    trash: <><path d="M5 7h14M10 11v6M14 11v6M9 7V4h6v3m-9 0 1 13h10l1-13" /></>, arrow: <><path d="M5 12h13M13 7l5 5-5 5" /></>,
+  }
+  return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>
 }
 
+function App() {
+  const hslToHex = (h, s, l) => { l /= 100; const a = s * Math.min(l, 1 - l) / 100; const f = n => { const k = (n + h / 30) % 12; const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1); return Math.round(255 * color).toString(16).padStart(2, '0') }; return `#${f(0)}${f(8)}${f(4)}` }
+  const generateComplementaryPalette = () => { const hue = Math.floor(Math.random() * 360); const sat = 60 + Math.floor(Math.random() * 30); return [hslToHex(hue, sat, 50), hslToHex((hue + 30) % 360, sat, 55), hslToHex((hue + 180) % 360, sat, 50), hslToHex((hue + 210) % 360, sat, 55), hslToHex((hue + 150) % 360, sat - 10, 60)] }
+  const [colors, setColors] = useState(() => generateComplementaryPalette()); const [copyStatus, setCopyStatus] = useState(null); const [view, setView] = useState('generator'); const [favorites, setFavorites] = useState(() => JSON.parse(localStorage.getItem('myPalettes')) || [])
+  useEffect(() => localStorage.setItem('myPalettes', JSON.stringify(favorites)), [favorites])
+  const addColor = () => { if (colors.length < 5) { const hue = parseInt(colors[colors.length - 1].slice(1), 16); setColors([...colors, hslToHex((hue % 360 + 60) % 360, 70, 55)]) } }
+  const removeColor = index => { if (colors.length > 2) setColors(colors.filter((_, i) => i !== index)) }; const copyToClipboard = hex => { navigator.clipboard.writeText(hex); setCopyStatus(hex); setTimeout(() => setCopyStatus(null), 2000) }; const saveToFavorites = () => { if (!favorites.some(p => JSON.stringify(p) === JSON.stringify(colors))) setFavorites([...favorites, [...colors]]) }; const removeFavorite = index => setFavorites(favorites.filter((_, i) => i !== index))
+  const navItems = [{ id: 'generator', label: 'Explorar', icon: 'sparkles' }, { id: 'favorites', label: 'Mis paletas', icon: 'heart', count: favorites.length }]
+  return <div className="app-shell"><aside className="sidebar"><button className="brand" onClick={() => setView('generator')} aria-label="Ir al generador"><span className="brand-mark"><Icon name="palette" size={23} /></span><span><strong>Color</strong> Theme</span></button><div className="sidebar-label">Biblioteca</div><nav className="side-nav" aria-label="Navegación principal">{navItems.map(item => <button key={item.id} onClick={() => setView(item.id)} className={view === item.id ? 'nav-item active' : 'nav-item'} aria-current={view === item.id ? 'page' : undefined}><Icon name={item.icon} /><span>{item.label}</span>{item.count > 0 && <span className="nav-count">{item.count}</span>}</button>)}</nav><div className="sidebar-spacer" /><button onClick={() => setView('policies')} className={view === 'policies' ? 'nav-item active' : 'nav-item'}><Icon name="info" /><span>Acerca de</span></button><div className="sidebar-footer"><span className="status-dot" /> Guardado localmente</div></aside>
+    <main className="main-content"><header className="topbar"><div><p className="eyebrow">Color Theme</p><h1>{view === 'generator' ? 'Generador de paletas' : view === 'favorites' ? 'Mis paletas' : 'Acerca de'}</h1></div><div className="topbar-actions"><span className="keyboard-hint">⌘ K</span><button className="icon-button" onClick={() => setView('policies')} aria-label="Información"><Icon name="info" /></button></div></header><AnimatePresence mode="wait">
+      {view === 'generator' && <Motion.section key="generator" className="view generator-view" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}><div className="section-intro"><div><h2>Encuentra tu combinación</h2><p>Genera una paleta armónica para tu próximo proyecto.</p></div><button className="save-button" onClick={saveToFavorites}><Icon name="heart" size={17} /> Guardar paleta</button></div><div className="palette-card" aria-label="Paleta actual">{colors.map((color, index) => <Motion.div key={color} layout className="color-column" style={{ backgroundColor: color }} initial={{ opacity: 0, scale: .98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: .94 }}><button className="color-code" onClick={() => copyToClipboard(color)} aria-label={`Copiar color ${color}`}><span className="copy-icon"><Icon name="copy" size={15} /></span>{color.toUpperCase()}</button>{colors.length > 2 && <button className="remove-color" onClick={() => removeColor(index)} aria-label={`Eliminar color ${color}`}><Icon name="x" size={16} /></button>}</Motion.div>)}</div><div className="palette-meta"><span><span className="meta-dot" style={{ backgroundColor: colors[0] }} /> Paleta complementaria</span><span>{colors.length} colores · Haz clic en un código para copiar</span></div><div className="generator-actions"><button className="secondary-button" onClick={addColor} disabled={colors.length >= 5}><Icon name="plus" size={18} /> Añadir color</button><button className="primary-button" onClick={() => setColors(generateComplementaryPalette())}><Icon name="refresh" size={18} /> Generar nueva</button></div></Motion.section>}
+      {view === 'favorites' && <Motion.section key="favorites" className="view" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}><div className="section-intro"><div><h2>Tus paletas guardadas</h2><p>Vuelve a tus combinaciones favoritas cuando quieras.</p></div><span className="count-badge">{favorites.length} {favorites.length === 1 ? 'paleta' : 'paletas'}</span></div>{favorites.length === 0 ? <div className="empty-state"><span className="empty-icon"><Icon name="heart" size={28} /></span><h3>Aún no hay paletas</h3><p>Guarda una paleta desde el generador para verla aquí.</p><button className="primary-button" onClick={() => setView('generator')}><Icon name="arrow" size={18} /> Ir al generador</button></div> : <div className="favorites-grid">{favorites.map((pal, pIdx) => <article key={pIdx} className="favorite-card"><div className="favorite-swatches">{pal.map((c, cIdx) => <div key={cIdx} style={{ backgroundColor: c }} />)}</div><div className="favorite-info"><div><strong>Paleta {String(pIdx + 1).padStart(2, '0')}</strong><span>{pal.length} colores</span></div><div className="card-actions"><button onClick={() => { setColors(pal); setView('generator') }} aria-label={`Cargar paleta ${pIdx + 1}`}><Icon name="arrow" size={17} /></button><button onClick={() => removeFavorite(pIdx)} aria-label={`Eliminar paleta ${pIdx + 1}`}><Icon name="trash" size={17} /></button></div></div></article>)}</div>}</Motion.section>}
+      {view === 'policies' && <Motion.section key="policies" className="view about-card" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}><span className="about-icon"><Icon name="palette" size={30} /></span><h2>Color Theme</h2><p>Una herramienta sencilla para crear paletas de color armónicas. Tus paletas favoritas se guardan localmente en este navegador mediante LocalStorage.</p><button className="secondary-button" onClick={() => setView('generator')}><Icon name="arrow" size={18} /> Volver al generador</button></Motion.section>}
+    </AnimatePresence><footer><span>© 2026 Color Theme</span><a href="https://github.com/NotExer">GitHub <Icon name="arrow" size={14} /></a></footer></main><AnimatePresence>{copyStatus && <Motion.div className="toast" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}><span className="toast-color" style={{ backgroundColor: copyStatus }} /><span><strong>{copyStatus.toUpperCase()}</strong> copiado al portapapeles</span><Icon name="copy" size={16} /></Motion.div>}</AnimatePresence></div>
+}
 export default App
